@@ -11,18 +11,25 @@ class UserController extends Controller
     public function index()
     {
 
-        
         $user = UserModel::firstOrNew(
             [
-                'username' => 'manager33',
-                'nama' => 'Manager Tiga Tiga',
+                'username' => 'manager11',
+                'nama' => 'Manager11',
                 'password' => Hash::make('12345'),
                 'level_id' => 2
 
-            ],
-        );
-        $user->save();
-        return view('user', ['data' => $user]);
+            ]);
+            $user->username='manager12';
+            $user->save();
+
+            $user->wasChanged(); //true
+            $user->wasChanged('username'); //true
+            $user->wasChanged(['username', 'level_id']); //true
+            $user->wasChanged('nama');//false
+            $user->wasChanged(['nama',' username' ]);
+
+
+
 
 
 
@@ -61,5 +68,34 @@ class UserController extends Controller
         //         'nama' => 'Manager',
         //     ],
         // );
+
+        // $user = UserModel::firstOrNew(
+        //     [
+        //         'username' => 'manager33',
+        //         'nama' => 'Manager Tiga Tiga',
+        //         'password' => Hash::make('12345'),
+        //         'level_id' => 2
+
+        //     ],
+        // );
+        // $user->save();
+
+
+        // $user->username = 'manager56';
+        // $user->isDirty(); //true
+        // $user->isDirty('username'); //true
+        // $user->isDirty('nama'); //false
+        // $user->isDirty(['nama', 'username']); //true
+
+        // $user->isClean(); //false
+        // $user->isClean('username'); //false
+        // $user->isClean('nama'); //true
+        // $user->isClean(['nama', 'username']); //false
+
+        // $user -> save();
+
+        // $user->isDirty(); //false
+        // $user->isClean(); //true 
+        // dd($user->isDirty());
     }
 }
