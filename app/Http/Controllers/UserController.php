@@ -23,9 +23,7 @@ class UserController extends Controller
         //     ];
         //     UserModel::where('username', 'customer-1')->update($data); //update data user
 
-        $user = UserModel::findOr(20,['username', 'nama'], function() {
-            abort(404);
-        });
+        $user = UserModel::findOrFail(1);
         return view('user', ['data' => $user]);
         
         // $user = UserModel::first();
