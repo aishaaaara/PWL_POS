@@ -30,17 +30,17 @@ class UserController extends Controller
     // Ambil data user dalam bentuk json untuk datatables
     public function list(Request $request)
     {
-        $user = UserModel::select('user_id', 'username', 'nama', 'level_id')->with('level');
+        $users = UserModel::select('user_id', 'username', 'nama', 'level_id')->with('level');
 
         // Filter data user berdasarkan level_id
         if ($request->level_id) {
-            $user->where('level_id', $request->level_id);
+            $users->where('level_id', $request->level_id);
         }
 
-        return DataTables::of($user)
+        return DataTables::of($users)
             ->addIndexColumn() // menambahkan kolom index / no urut (default nama kolom: DT_RowIndex)
             ->addColumn('aksi', function ($user) { // menambahkan kolom aksi
-                $btn = '<button onclick="modalAction(\'' . url('/user/' . $user->user_id . '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
+                $btn = '<button onclick="modalAction(\'' . url('/user/' . $user->user_id . '/show') . '\')" class="btn btn-info btn-sm">Detail</button> ';
                 $btn .= '<button onclick="modalAction(\'' . url('/user/' . $user->user_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
                 $btn .= '<button onclick="modalAction(\'' . url('/user/' . $user->user_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button> ';
                 return $btn;
@@ -289,6 +289,39 @@ class UserController extends Controller
               }
               
               return redirect('/');
-          }
-  
+            }
+
+        public function confirm_ajax(string $id) 
+              {
+                  $user = UserModel::find($id);
+      
+                  return view('user.confirm_ajax', ['user' => $user]);
+              }
+        
+        //delete
+        public function delete_ajax(Request $request, $id)
+        {
+            // Cek apakah request berasal dari AJAX atau permintaan JSON
+            if ($request->ajax() || $request->wantsJson()) {
+                // Cari user berdasarkan id
+                $user = UserModel::find($id);
+                
+                // Jika user ditemukan, hapus data
+                if ($user) {
+                    $user->delete();
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'Data berhasil dihapus'
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Data tidak ditemukan'
+                    ]);
+                }
+            }
+
+            // Jika bukan request AJAX, arahkan kembali ke halaman sebelumnya
+            return redirect('/');
+} 
 }

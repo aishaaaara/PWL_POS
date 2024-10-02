@@ -23,6 +23,8 @@ Route::group(['prefix' => 'user'], function() {
     Route::put('/{id}', [UserController::class, 'update']); //menyimapn perubahan 
     Route::get('/{id}/edit_ajax', [UserController::class, 'edit_ajax']); //menampilkan halaman edit user
     Route::put('/{id}/update_ajax', [UserController::class, 'update_ajax']);
+    Route::get('/{id}/delete_ajax', [UserController::class, 'confirm_ajax']); //mnghapus data user
+    Route::delete('/{id}/delete_ajax', [UserController::class, 'delete_ajax']); //mnghapus data user
     Route::delete('/{id}', [UserController::class, 'destroy']); //mnghapus data user
 });
 
