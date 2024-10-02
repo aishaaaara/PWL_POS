@@ -1,11 +1,11 @@
 <?php
 namespace App\Http\Controllers;
-
 use App\Models\LevelModel;
 use App\Models\UserModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
@@ -190,5 +190,56 @@ class UserController extends Controller
             }
 }
 
+
+
+////AJAX
+        // Fungsi create_ajax()
+        public function create_ajax()
+        {
+            $level = LevelModel::select('level_id', 'level_nama')->get();
+            return view('user.create_ajax')->with('level', $level);
+        }
+
+        // Proses simpan data melalui ajax
+        public function store_ajax(Request $request)
+        {
+            // Cek apakah request berupa ajax
+            if($request->ajax() || $request->wantsJson()) {
+                $rules = [
+                    'level_id' => 'required|integer',
+                    'username' => 'required|string|min:3|unique:m_user,username',
+                    'nama' => 'required|string|max:100',
+                    'password' => 'required|min:6'
+                ];
+
+                // use Illuminate\Support\Facades\Validator;
+                $validator = Validator::make($request->all(), $rules);
+
+                if($validator->fails()) {
+                    return response()->json([
+                        'status' => false, // response status, false: error/gagal, true: berhasil
+                        'message' => 'Validasi Gagal',
+                        'msgField' => $validator->errors(), // pesan error validasi
+                    ]);
+                }
+
+                // Simpan data user
+                UserModel::create([
+                    'level_id' => $request->level_id,
+                    'username' => $request->username,
+                    'nama' => $request->nama,
+                    'password' => bcrypt($request->password) // pastikan password terenkripsi
+                ]);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Data user berhasil disimpan'
+                ]);
+            }
+
+            return redirect('/');
+        }
+
+        // Ambil data user dalam bentuk json untuk datatables  
 
 }
