@@ -1,7 +1,12 @@
 <?php
 namespace App\Http\Controllers;
+
+use App\Models\UserModel;
+use App\Models\LevelModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Hash; 
 
 class AuthController extends Controller
 {
@@ -39,5 +44,42 @@ class AuthController extends Controller
             $request->session()->invalidate();
             $request->session()->regenerateToken();
             return redirect('login');
+}
+
+public function register(Request $request)
+{
+    // Validasi data yang diterima
+    $validator = Validator::make($request->all(), [
+        'level_id' => 'required|integer|exists:m_level,level_id', 
+        'username' => 'required|string|min:4|max:20|unique:m_user,username', 
+        'nama' => 'required|string|max:255', 
+        'password' => 'required|string|min:6|confirmed',
+    ]);
+
+    // Jika validasi gagal
+    if ($validator->fails()) {
+        return redirect()->back()
+            ->withErrors($validator)
+            ->withInput();
+    }
+
+    // Buat user baru
+    UserModel::create([
+        'level_id' => $request->level_id, 
+        'username' => $request->username, 
+        'nama' => $request->nama, 
+        'password' => Hash::make($request->password),
+    ]);
+
+    // mengarahkan kembali ke kalaman login
+    return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login dengan kredensial Anda.'); 
+}
+
+public function showRegisterForm()
+{
+    $level = LevelModel::all(); 
+    return view('auth.register', compact('level')); 
+
+
 }
 }

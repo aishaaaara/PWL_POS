@@ -1,3 +1,8 @@
+@if(session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -66,6 +71,9 @@
         <!-- /.card -->
     </div>
     <!-- /.login-box -->
+    <p class="mb-1 mt-2">
+        <a href="{{ url('register') }}">Don't have an account? Register here</a>
+    </p>
 
     <!-- jQuery -->
     <script src="{{ asset('adminlte/plugins/jquery/jquery.min.js') }}"></script>
