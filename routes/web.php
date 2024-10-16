@@ -37,6 +37,8 @@ Route::middleware(['auth'])->group(function(){
         Route::get('/level/{id}/delete_ajax', [LevelController::class, 'confirm_ajax']); //menghapus data Level
         Route::delete('/level/{id}/delete_ajax', [LevelController::class, 'delete_ajax']); //menghapus data user
         Route::delete('/level/{id}', [LevelController::class, 'destroy']); //menghapus data level
+        Route::get('/level/export_pdf', [LevelController::class, 'export_pdf']);// export excel
+
     });
     
     //user
@@ -55,6 +57,7 @@ Route::middleware(['auth'])->group(function(){
         Route::get('/user/{id}/delete_ajax', [UserController::class, 'confirm_ajax']); //mnghapus data user
         Route::delete('/user/{id}/delete_ajax', [UserController::class, 'delete_ajax']); //mnghapus data user
         Route::delete('/user/{id}', [UserController::class, 'destroy']); //mnghapus data user
+        Route::get('/user/export_pdf', [UserController::class, 'export_pdf']);// export excel
     });
 
     //kategori
@@ -72,6 +75,8 @@ Route::middleware(['auth'])->group(function(){
         Route::get('/kategori/{id}/delete_ajax', [KategoriController::class, 'confirm_ajax']); //mnghapus data Kategori
         Route::delete('/kategori/{id}/delete_ajax', [KategoriController::class, 'delete_ajax']); //mnghapus data user
         Route::delete('/kategori/{id}', [KategoriController::class, 'destroy']); //mnghapus data Kategori
+        Route::get('/kategori/export_pdf', [KategoriController::class, 'export_pdf']);// export excel
+
     });
     
     //supplier
@@ -90,6 +95,8 @@ Route::middleware(['auth'])->group(function(){
         Route::get('/supplier/{id}/delete_ajax', [SupplierController::class, 'confirm_ajax']); //mnghapus data Supplier
         Route::delete('/supplier/{id}/delete_ajax', [SupplierController::class, 'delete_ajax']); //mnghapus data user
         Route::delete('/supplier/{id}', [SupplierController::class, 'destroy']); //mnghapus data Supplier
+        Route::get('/supplier/export_pdf', [SupplierController::class, 'export_pdf']);// export excel
+
     });
     
     //barang
