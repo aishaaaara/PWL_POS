@@ -108,8 +108,11 @@ Route::middleware(['auth'])->group(function(){
         Route::get('/barang/{id}/delete_ajax', [BarangController::class, 'confirm_ajax']); //mnghapus data Barang
         Route::delete('/barang/{id}/delete_ajax', [BarangController::class, 'delete_ajax']); //mnghapus data user
         Route::delete('/barang/{id}', [BarangController::class, 'destroy']); //mnghapus data Barang
-    
-       
+        Route::get('/barang/import', [BarangController::class, 'import']); //ajax import excel
+        Route::post('/barang/import_ajax', [BarangController::class, 'import_ajax']); //ajax import excel
+        Route::get('/barang/export_excel', [BarangController::class, 'export_excel']);// export excel
+        Route::get('/barang/export_pdf', [BarangController::class, 'export_pdf']);// export pdf
+
     });
 
 });
