@@ -5,9 +5,13 @@ namespace App\Http\Controllers;
 class WelcomeController extends Controller
 {
     public function index(){
-        $breadcrumb = (object)[
-            'title' => 'Selamat Datang',
-            'list' => ['Home', 'Welcome']
+    
+        $breadcrumb = (object) [
+            'title' => 'Welcome',
+            'list' => [
+                ['name' => 'Home', 'url' => url('/')],
+                ['name' => 'welcome', 'url' => url('/welcome')]
+            ]
         ];
 
         $activeMenu = 'dashboard';

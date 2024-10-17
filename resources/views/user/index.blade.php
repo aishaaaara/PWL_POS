@@ -4,10 +4,12 @@
 <div class="card card-outline card-primary"> 
     <div class="card-header"> 
         <h3 class="card-title">{{ $page->title }}</h3> 
-        <div class="card-tools"> 
-          <button onclick="modalAction('{{ url('/user/create_ajax') }}')" class="btn btn-info">Tambah Data</button>
-          <a href="{{ url('/user/export_pdf') }}" class="btn btn-warning"><i class="fa fa-file-pdf"></i> Export Barang(PDF)</a>
-        </div>
+        <div class="card-tools">
+            <button onclick="modalAction('{{ url('/user/create_ajax') }}')" class="btn btn-success">Tambah user</button>
+              <button onclick="modalAction('{{ url('/user/import') }}')" class="btn btn-info">Import user</button>
+              <a href="{{ url('/user/export_excel') }}" class="btn btn-primary"><i class="fa fa-file-excel"></i> Export user (Excel)</a>        
+              <a href="{{ url('/user/export_pdf') }}" class="btn btn-warning"><i class="fa fa-file-pdf"></i> Export User(PDF)</a>
+            </div>
     </div>
     
     <div class="card-body">

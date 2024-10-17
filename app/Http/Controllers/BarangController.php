@@ -16,9 +16,12 @@ class BarangController extends Controller
     public function index()
     {
         $activeMenu = 'barang';
-        $breadcrumb = (object)[
-            'title' => 'Data Barang',
-            'list' => ['Home', 'Barang']
+        $breadcrumb = (object) [
+            'title' => 'Barang',
+            'list' => [
+                ['name' => 'Home', 'url' => url('/')],
+                ['name' => 'Barang', 'url' => url('/barang')]
+            ]
         ];
         $kategori = KategoriModel::select('kategori_id', 'kategori_nama')->get();
         return view('barang.index', [
@@ -46,6 +49,14 @@ class BarangController extends Controller
             ->rawColumns(['aksi'])
             ->make(true);
     }
+
+    public function show_ajax(string $id)
+    {
+        $barang = BarangModel::find($id);
+
+        return view('barang.show_ajax', ['barang' => $barang]);
+    }
+
 
     public function create_ajax()
     {
@@ -90,6 +101,33 @@ class BarangController extends Controller
     public function update_ajax(Request $request, $id)
     {
         // cek apakah request dari ajax
+    }
+
+    public function confirm_ajax(string $id)
+    {
+        $barang = BarangModel::find($id);
+
+        return view('barang.confirm_ajax', ['barang' => $barang]);
+    }
+
+    public function delete_ajax(Request $request, $id) {
+        // cek apakah request dari ajax
+        if ($request->ajax() || $request->wantsJson()) {
+            $barang = BarangModel::find($id);
+            if ($barang) {
+                $barang->delete();
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Data berhasil dihapus'
+                ]);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Data tidak ditemukan'
+                ]);
+            }
+        }
+        return redirect('/');
     }
 
     public function import()
