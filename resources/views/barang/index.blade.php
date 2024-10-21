@@ -93,8 +93,6 @@ $(document).ready(function(){
             },
             {
                 data: "barang_nama", 
-                className: "",
-                width: "37%",
                 orderable: true,
                 searchable: true,
             },

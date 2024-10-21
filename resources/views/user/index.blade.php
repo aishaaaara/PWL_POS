@@ -106,6 +106,7 @@ $(document).ready(function() {
         ] 
     }); 
 
+    
     $('#level_id').on('change', function () {
         dataUser.ajax.reload();
     });

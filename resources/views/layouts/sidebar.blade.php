@@ -52,6 +52,12 @@
           <p>Data Barang</p> 
         </a> 
       </li> 
+      <li class="nav-item"> 
+        <a href="{{ url('/stok') }}" class="nav-link {{ ($activeMenu == 'stok') ? 'active' : '' }}"> 
+          <i class="nav-icon fas fa-clipboard-list"></i>
+          <p>Data Stok Barang</p> 
+        </a> 
+      </li> 
 
       <li class="nav-header">Data Supplier</li> 
       <li class="nav-item"> 
@@ -60,6 +66,15 @@
           <p>Daftar Supplier</p> 
         </a> 
       </li>  
+
+      <li class="nav-header">Data Transaksi</li> 
+      <li class="nav-item"> 
+        <a href="{{ url('/supplier') }}" class="nav-link {{ ($activeMenu == 'supplier') ? 'active' : '' }}"> 
+          <i class="nav-icon fas fa-receipt"></i>
+          <p>Data detail Penjualan</p> 
+        </a> 
+      </li>  
     </ul> 
   </nav> 
 </div>  
+

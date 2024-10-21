@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\LevelModel;
 use App\Models\BarangModel;
 use App\Models\KategoriModel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Yajra\DataTables\Facades\DataTables;
@@ -31,6 +31,7 @@ class BarangController extends Controller
         ]);
     }
 
+    // Ambil data barang dalam bentuk json untuk datatables
     public function list(Request $request)
     {
         $barang = BarangModel::select('barang_id', 'barang_kode', 'barang_nama', 'harga_beli', 'harga_jual', 'kategori_id')->with('kategori');
@@ -42,11 +43,11 @@ class BarangController extends Controller
             ->addIndexColumn()
             ->addColumn('aksi', function ($barang) {
                 $btn = '<button onclick="modalAction(\'' . url('/barang/' . $barang->barang_id . '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
-                $btn .= '<button onclick="modalAction(\'' . url('/barang/' . $barang->barang_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
+                $btn .= '<button onclick="modalAction(\'' . url('/barang/' . $barang->barang_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button>';
                 $btn .= '<button onclick="modalAction(\'' . url('/barang/' . $barang->barang_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button> ';
                 return $btn;
             })
-            ->rawColumns(['aksi'])
+            ->rawColumns(['aksi']) // ada teks html
             ->make(true);
     }
 
@@ -94,13 +95,46 @@ class BarangController extends Controller
     public function edit_ajax($id)
     {
         $barang = BarangModel::find($id);
-        $level = LevelModel::select('level_id', 'level_nama')->get();
-        return view('barang.edit_ajax', ['barang' => $barang, 'level' => $level]);
+        $kategori = KategoriModel::all(); // Ambil semua kategori
+
+        return view('barang.edit_ajax', ['barang' => $barang, 'kategori' => $kategori]);
     }
 
     public function update_ajax(Request $request, $id)
     {
         // cek apakah request dari ajax
+        if ($request->ajax() || $request->wantsJson()) {
+            $rules = [
+                'kategori_id' => ['required', 'integer', 'exists:m_kategori,kategori_id'],
+                'barang_kode' => ['required', 'min:3', 'max:20', 'unique:m_barang,barang_kode, ' . $id . ',barang_id'],
+                'barang_nama' => ['required', 'string', 'max:100'],
+                'harga_beli' => ['required', 'numeric'],
+                'harga_jual' => ['required', 'numeric'],
+            ];
+            // use Illuminate\Support\Facades\Validator;
+            $validator = Validator::make($request->all(), $rules);
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false, // respon json, true: berhasil, false: gagal
+                    'message' => 'Validasi gagal.',
+                    'msgField' => $validator->errors() // menunjukkan field mana yang error
+                ]);
+            }
+            $check = BarangModel::find($id);
+            if ($check) {
+                $check->update($request->all());
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Data berhasil diupdate'
+                ]);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Data tidak ditemukan'
+                ]);
+            }
+        }
+        return redirect('/');
     }
 
     public function confirm_ajax(string $id)
@@ -111,10 +145,17 @@ class BarangController extends Controller
     }
 
     public function delete_ajax(Request $request, $id) {
-        // cek apakah request dari ajax
         if ($request->ajax() || $request->wantsJson()) {
             $barang = BarangModel::find($id);
             if ($barang) {
+                // Cek apakah ada entri terkait di t_penjualan_detail
+                $relatedCount = DB::table('t_penjualan_detail')->where('barang_id', $id)->count();
+                if ($relatedCount > 0) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Tidak dapat menghapus barang ini karena masih ada entri terkait di penjualan.'
+                    ]);
+                }
                 $barang->delete();
                 return response()->json([
                     'status' => true,
@@ -129,7 +170,7 @@ class BarangController extends Controller
         }
         return redirect('/');
     }
-
+    
     public function import()
     {
         return view('barang.import');

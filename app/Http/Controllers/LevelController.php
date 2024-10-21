@@ -182,7 +182,7 @@ class LevelController extends Controller
                 }
             }
 
-                    // Fungsi create_ajax()
+        // Fungsi create_ajax()
             public function create_ajax()
         {
             return view('level.create_ajax');
