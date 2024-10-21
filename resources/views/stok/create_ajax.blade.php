@@ -53,7 +53,7 @@
 
 
 <script>
-    $(document).ready(function() {
+   $(document).ready(function() {
     $("#form-tambah-stok").validate({
         rules: {
             barang_id: {
@@ -114,5 +114,6 @@
         }
     });
 });
+
 
 </script>

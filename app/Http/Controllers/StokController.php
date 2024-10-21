@@ -112,6 +112,16 @@ class StokController extends Controller
             ]);
         }
 
+        // Cek apakah barang_id sudah ada dalam stok
+        $existingStock = StokModel::where('barang_id', $request->barang_id)->first();
+        if ($existingStock) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Barang sudah ada di stok',
+                'msgField' => ['barang_id' => ['Barang ini sudah ada di stok.']]
+            ]);
+        }
+
         // Menambahkan user_id dari user yang login
         $data = $request->all();
         $data['user_id'] = auth()->user()->user_id; // Otomatis mengisi user_id dengan ID user yang login
@@ -127,6 +137,7 @@ class StokController extends Controller
 
     return redirect('/');
 }
+
 
 // Menampilkan halaman form edit stok ajax
         public function edit_ajax(string $id)
