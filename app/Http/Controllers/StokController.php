@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\StokModel;
 use App\Models\BarangModel;
+use App\Models\KategoriModel;
 use App\Models\SupplierModel;
 use App\Models\UserModel;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -16,69 +17,84 @@ use Yajra\DataTables\Facades\DataTables;
 class StokController extends Controller
 {
     public function index()
-    {
-        $activeMenu = 'stok'; // Menyesuaikan dengan menu stok
-        $breadcrumb = (object) [
-            'title' => 'Stok',
-            'list' => [
-                ['name' => 'Home', 'url' => url('/')],
-                ['name' => 'Stok', 'url' => url('/stok')]
-            ]
-        ];
+{
+    $activeMenu = 'stok'; 
+    $breadcrumb = (object) [
+        'title' => 'Stok',
+        'list' => [
+            ['name' => 'Home', 'url' => url('/')],
+            ['name' => 'Stok', 'url' => url('/stok')]
+        ]
+    ];
 
-        $barang = BarangModel::select('barang_id', 'barang_nama')->get();
-        $supplier = SupplierModel::select('supplier_id', 'supplier_nama')->get();
-        $user = UserModel::select('user_id', 'nama')->get();
+    $barang = BarangModel::select('barang_id', 'barang_nama', 'kategori_id')->with('kategori')->get(); // Memuat relasi kategori
+    $supplier = SupplierModel::select('supplier_id', 'supplier_nama')->get();
+    $user = UserModel::select('user_id', 'nama')->get();
+    $kategori = KategoriModel::select('kategori_id', 'kategori_nama')->get(); // Menambahkan kategori
 
-        return view('stok.index', [
-            'activeMenu' => $activeMenu,
-            'breadcrumb' => $breadcrumb,
-            'barang' => $barang,
-            'supplier' => $supplier,
-            'user' => $user
-        ]);
+    return view('stok.index', [
+        'activeMenu' => $activeMenu,
+        'breadcrumb' => $breadcrumb,
+        'barang' => $barang,
+        'supplier' => $supplier,
+        'user' => $user,
+        'kategori' => $kategori // Mengirim data kategori
+    ]);
+}
+
+
+public function list(Request $request)
+{
+    $stok = StokModel::select('stok_id', 'barang_id', 'supplier_id', 'user_id', 'stok_tanggal', 'stok_jumlah')
+        ->with(['barang', 'supplier', 'user']); // Memuat relasi dengan barang, supplier, dan user
+
+    // Filter berdasarkan barang
+    $barang_id = $request->input('filter_barang');
+    if (!empty($barang_id)) {
+        $stok->where('barang_id', $barang_id);
     }
 
-    public function list(Request $request)
-    {
-        $stok = StokModel::select('stok_id', 'barang_id', 'supplier_id', 'user_id', 'stok_tanggal', 'stok_jumlah')
-            ->with(['barang', 'supplier', 'user']); // Memuat relasi dengan barang, supplier, dan user
-
-        $barang_id = $request->input('filter_barang');
-        if (!empty($barang_id)) {
-            $stok->where('barang_id', $barang_id);
-        }
-        
-        return DataTables::of($stok)
-            ->addIndexColumn()
-            ->addColumn('aksi', function ($stok) {
-                $btn = '<button onclick="modalAction(\'' . url('/stok/' . $stok->stok_id . '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
-                $btn .= '<button onclick="modalAction(\'' . url('/stok/' . $stok->stok_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
-                $btn .= '<button onclick="modalAction(\'' . url('/stok/' . $stok->stok_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button> ';
-                return $btn;
-            })
-            ->editColumn('stok_tanggal', function($stok) {
-                return \Carbon\Carbon::parse($stok->stok_tanggal)->format('d-m-Y');
-            })
-            ->addColumn('barang_nama', function($stok) {
-                return $stok->barang->barang_nama;
-            })
-            ->addColumn('supplier_nama', function($stok) {
-                return $stok->supplier->supplier_nama;
-            })
-            ->addColumn('user_nama', function($stok) {
-                return $stok->user->nama;
-            })
-            ->rawColumns(['aksi'])
-            ->make(true);
+    // Filter berdasarkan kategori barang
+    $kategori_id = $request->input('filter_kategori');
+    if (!empty($kategori_id)) {
+        $stok->whereHas('barang', function($query) use ($kategori_id) {
+            $query->where('kategori_id', $kategori_id);
+        });
     }
+
+    return DataTables::of($stok)
+        ->addIndexColumn()
+        ->addColumn('aksi', function ($stok) {
+            $btn = '<button onclick="modalAction(\'' . url('/stok/' . $stok->stok_id . '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
+            $btn .= '<button onclick="modalAction(\'' . url('/stok/' . $stok->stok_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
+            $btn .= '<button onclick="modalAction(\'' . url('/stok/' . $stok->stok_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button> ';
+            return $btn;
+        })
+        ->editColumn('stok_tanggal', function($stok) {
+            return \Carbon\Carbon::parse($stok->stok_tanggal)->format('d-m-Y');
+        })
+        ->addColumn('barang_nama', function($stok) {
+            return $stok->barang->barang_nama;
+        })
+        ->addColumn('supplier_nama', function($stok) {
+            return $stok->supplier->supplier_nama;
+        })
+        ->addColumn('user_nama', function($stok) {
+            return $stok->user->nama;
+        })
+        ->rawColumns(['aksi'])
+        ->make(true);
+}
+
+
 
     public function show_ajax(string $id)
     {
-        $stok = StokModel::with(['barang', 'supplier', 'user'])->find($id);
-
+        $stok = StokModel::with(['barang.kategori', 'supplier', 'user'])->find($id);
+    
         return view('stok.show_ajax', ['stok' => $stok]);
     }
+    
 
     public function create_ajax()
     {
@@ -247,103 +263,117 @@ class StokController extends Controller
     }
 
     public function import_ajax(Request $request)
-    {
-        if ($request->ajax() || $request->wantsJson()) {
-            // Validasi input
-            $rules = [
-                'file_stok' => ['required', 'mimes:xlsx,xls', 'max:1024'], // Hanya menerima file Excel dengan ekstensi .xlsx dan .xls
-            ];
+{
+    if ($request->ajax() || $request->wantsJson()) {
+        // Validasi input
+        $rules = [
+            'file_stok' => ['required', 'mimes:xlsx,xls', 'max:1024'], // Hanya menerima file Excel dengan ekstensi .xlsx dan .xls
+        ];
+        
+        $validator = Validator::make($request->all(), $rules);
+        
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validasi Gagal',
+                'msgField' => $validator->errors()
+            ]);
+        }
+
+        try {
+            $file = $request->file('file_stok'); // Ambil file dari request
+            $reader = IOFactory::createReader('Xlsx'); // Load reader file excel
+            $reader->setReadDataOnly(true); // Hanya membaca data
+            $spreadsheet = $reader->load($file->getRealPath()); // Load file excel
+            $sheet = $spreadsheet->getActiveSheet(); // Ambil sheet yang aktif
+            $data = $sheet->toArray(null, false, true, true); // Ambil data excel
+            $insert = [];
+            $importedData = []; // Array untuk menyimpan data yang berhasil diimport
+            $failedData = []; // Array untuk menyimpan data yang gagal diimport
             
-            $validator = Validator::make($request->all(), $rules);
+            $user_id = auth()->user()->user_id; // Ambil ID user yang login
             
-            if ($validator->fails()) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Validasi Gagal',
-                    'msgField' => $validator->errors()
-                ]);
-            }
-    
-            try {
-                $file = $request->file('file_stok'); // Ambil file dari request
-                $reader = IOFactory::createReader('Xlsx'); // Load reader file excel
-                $reader->setReadDataOnly(true); // Hanya membaca data
-                $spreadsheet = $reader->load($file->getRealPath()); // Load file excel
-                $sheet = $spreadsheet->getActiveSheet(); // Ambil sheet yang aktif
-                $data = $sheet->toArray(null, false, true, true); // Ambil data excel
-                $insert = [];
-                $importedData = []; // Array untuk menyimpan data yang berhasil diimport
-    
-                $user_id = auth()->user()->user_id; // Ambil ID user yang login
-                
-                if (count($data) > 1) { // Jika data lebih dari 1 baris
-                    foreach ($data as $baris => $value) {
-                        if ($baris > 1) { // Baris ke 1 adalah header, maka lewati
-                            // Lakukan validasi sederhana terhadap data yang diimport
-                            try {
-                                $stok_tanggal = \Carbon\Carbon::createFromFormat('Y-m-d', $value['C'])->format('Y-m-d');
-                            } catch (\Exception $e) {
-                                $stok_tanggal = null; // Jika format tidak valid, set null
-                            }
-                            $stok_jumlah = is_numeric($value['D']) ? $value['D'] : 0;
-    
-                            if (!$stok_tanggal || $stok_jumlah <= 0) {
-                                continue; // Jika tanggal atau jumlah tidak valid, lewati
-                            }
-    
-                            $insert[] = [
-                                'supplier_id' => $value['A'], // Mengambil supplier_id dari kolom A
-                                'barang_id' => $value['B'], // Mengambil barang_id dari kolom B
-                                'stok_tanggal' => $stok_tanggal, // Mengambil stok_tanggal dari kolom C
-                                'stok_jumlah' => $stok_jumlah, // Mengambil stok_jumlah dari kolom D
-                                'user_id' => $user_id, // Otomatis menggunakan user_id yang login
-                                'created_at' => now(), // Waktu sekarang untuk created_at
-                            ];
-    
-                            // Menyimpan data yang berhasil diimport untuk dikembalikan ke client
-                            $importedData[] = [
+            if (count($data) > 1) { // Jika data lebih dari 1 baris
+                foreach ($data as $baris => $value) {
+                    if ($baris > 1) { // Baris ke 1 adalah header, maka lewati
+                        try {
+                            $stok_tanggal = \Carbon\Carbon::createFromFormat('Y-m-d', $value['C'])->format('Y-m-d');
+                        } catch (\Exception $e) {
+                            $stok_tanggal = null; // Jika format tidak valid, set null
+                        }
+                        $stok_jumlah = is_numeric($value['D']) ? $value['D'] : 0;
+
+                        // Periksa apakah stok_tanggal dan stok_jumlah valid
+                        if (!$stok_tanggal || $stok_jumlah <= 0) {
+                            continue; // Jika tanggal atau jumlah tidak valid, lewati
+                        }
+
+                        // Cek apakah barang_id sudah ada di database
+                        $barangExists = StokModel::where('barang_id', $value['B'])->exists();
+                        if ($barangExists) {
+                            // Tambahkan ke data yang gagal diimport
+                            $failedData[] = [
                                 'supplier_id' => $value['A'],
                                 'barang_id' => $value['B'],
-                                'stok_tanggal' => $stok_tanggal,
-                                'stok_jumlah' => $stok_jumlah,
+                                'stok_tanggal' => $stok_tanggal['C'],
+                                'stok_jumlah' => $stok_jumlah['D'],
+                                'reason' => 'Barang ID sudah ada'
                             ];
+                            continue; // Lewati proses insert jika barang sudah ada
                         }
+
+                        $insert[] = [
+                            'supplier_id' => $value['A'], // Mengambil supplier_id dari kolom A
+                            'barang_id' => $value['B'], // Mengambil barang_id dari kolom B
+                            'stok_tanggal' => $stok_tanggal['C'], 
+                            'stok_jumlah' => $stok_jumlah['D'], 
+                            'user_id' => $user_id, // Otomatis menggunakan user_id yang login
+                            'created_at' => now(), // Waktu sekarang untuk created_at
+                        ];
+
+                        // Menyimpan data yang berhasil diimport untuk dikembalikan ke client
+                        $importedData[] = [
+                            'supplier_id' => $value['A'],
+                            'barang_id' => $value['B'],
+                            'stok_tanggal' => $stok_tanggal['C'],
+                            'stok_jumlah' => $stok_jumlah['D'],
+                        ];
                     }
-    
-                    if (count($insert) > 0) {
-                        // Insert data ke database, jika data sudah ada, maka diabaikan
-                        StokModel::insertOrIgnore($insert);
-    
-                        return response()->json([
-                            'status' => true,
-                            'message' => 'Data berhasil diimport',
-                            'data' => $importedData // Mengirim data yang diimport kembali ke client
-                        ]);
-                    }
-    
+                }
+
+                if (count($insert) > 0) {
+                    // Insert data ke database, jika data sudah ada, maka diabaikan
+                    StokModel::insertOrIgnore($insert);
+
                     return response()->json([
-                        'status' => false,
-                        'message' => 'Tidak ada data yang diimport'
-                    ]);
-                } else {
-                    return response()->json([
-                        'status' => false,
-                        'message' => 'Tidak ada data yang diimport'
+                        'status' => true,
+                        'message' => 'Data berhasil diimport',
+                        'data' => $importedData, // Mengirim data yang diimport kembali ke client
+                        'failed' => $failedData // Data yang gagal diimport
                     ]);
                 }
-            } catch (\Exception $e) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Terjadi kesalahan saat mengimport data: ' . $e->getMessage()
+                    'message' => 'Tidak ada data yang diimport',
+                    'failed' => $failedData // Mengembalikan data yang gagal
+                ]);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Tidak ada data yang diimport'
                 ]);
             }
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan saat mengimport data: ' . $e->getMessage()
+            ]);
         }
-    
-        return redirect('/');
     }
-    
-    
-    
+
+    return redirect('/');
+}
+
 
         public function export_excel()
         {

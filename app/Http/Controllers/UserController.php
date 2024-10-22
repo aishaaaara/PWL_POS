@@ -341,10 +341,25 @@ class UserController extends Controller
             $data = $sheet->toArray(null, false, true, true); // Ambil data excel
             $insert = [];
             $importedData = []; // Array untuk menyimpan data yang berhasil diimport
+            $failedData = []; // Array untuk menyimpan data yang gagal diimport
     
             if (count($data) > 1) { // Jika data lebih dari 1 baris
                 foreach ($data as $baris => $value) {
                     if ($baris > 1) { // Baris ke 1 adalah header, maka lewati
+    
+                        // Cek apakah username sudah ada di database
+                        $userExists = UserModel::where('username', $value['B'])->exists();
+    
+                        if ($userExists) {
+                            // Tambahkan ke data yang gagal diimport
+                            $failedData[] = [
+                                'username' => $value['B'],
+                                'nama' => $value['C'],
+                                'reason' => 'Username sudah ada'
+                            ];
+                            continue; // Lewati proses insert jika username sudah ada
+                        }
+    
                         $insert[] = [
                             'level_id' => $value['A'],
                             'username' => $value['B'],
@@ -369,13 +384,15 @@ class UserController extends Controller
                     return response()->json([
                         'status' => true,
                         'message' => 'Data berhasil diimport',
-                        'data' => $importedData // Mengirim data yang diimport kembali ke client
+                        'data' => $importedData, // Mengirim data yang diimport kembali ke client
+                        'failed' => $failedData // Mengirim data yang gagal diimport
                     ]);
                 }
     
                 return response()->json([
                     'status' => false,
-                    'message' => 'Tidak ada data yang diimport'
+                    'message' => 'Tidak ada data yang diimport',
+                    'failed' => $failedData // Mengembalikan data yang gagal
                 ]);
             } else {
                 return response()->json([
@@ -387,7 +404,6 @@ class UserController extends Controller
     
         return redirect('/');
     }
-    
     
     public function export_excel()
     {

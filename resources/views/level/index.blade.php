@@ -3,7 +3,7 @@
 <div class="card card-outline card-primary"> 
     <div class="card-header">
         <h3 class="card-title">Daftar Level</h3>
-        <div >
+        <div class="card-tools">
         <button onclick="modalAction('{{ url('/level/create_ajax') }}')" class="btn btn-success">Tambah level</button>
           <button onclick="modalAction('{{ url('/level/import') }}')" class="btn btn-info">Import level</button>
           <a href="{{ url('/level/export_excel') }}" class="btn btn-primary"><i class="fa fa-file-excel"></i> Export level (Excel)</a>        

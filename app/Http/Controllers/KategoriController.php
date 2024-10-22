@@ -267,7 +267,7 @@ class KategoriController extends Controller
             $rules = [
                 'file_kategori' => ['required', 'mimes:xlsx', 'max:1024']
             ];
-
+    
             $validator = Validator::make($request->all(), $rules);
             if ($validator->fails()) {
                 return response()->json([
@@ -276,7 +276,7 @@ class KategoriController extends Controller
                     'msgField' => $validator->errors()
                 ]);
             }
-
+    
             $file = $request->file('file_kategori');
             $reader = IOFactory::createReader('Xlsx');
             $reader->setReadDataOnly(true);
@@ -284,24 +284,56 @@ class KategoriController extends Controller
             $sheet = $spreadsheet->getActiveSheet();
             $data = $sheet->toArray(null, false, true, true);
             $insert = [];
-
-            if (count($data) > 1) {
+            $importedData = []; // Array untuk menyimpan data yang berhasil diimport
+            $failedData = []; // Array untuk menyimpan data yang gagal diimport
+    
+            if (count($data) > 1) { // Jika data lebih dari 1 baris
                 foreach ($data as $baris => $value) {
-                    if ($baris > 1) {
+                    if ($baris > 1) { // Baris pertama dianggap header
+    
+                        // Cek apakah kategori_kode sudah ada di database
+                        $kategoriExists = KategoriModel::where('kategori_kode', $value['A'])->exists();
+                        
+                        if ($kategoriExists) {
+                            // Tambahkan ke data yang gagal diimport
+                            $failedData[] = [
+                                'kategori_kode' => $value['A'],
+                                'kategori_nama' => $value['B'],
+                                'reason' => 'Kategori kode sudah ada'
+                            ];
+                            continue; // Lewati proses insert jika kategori_kode sudah ada
+                        }
+    
                         $insert[] = [
                             'kategori_kode' => $value['A'],
                             'kategori_nama' => $value['B'],
                             'created_at' => now(),
                         ];
+    
+                        // Menyimpan data yang berhasil diimport untuk dikembalikan ke client
+                        $importedData[] = [
+                            'kategori_kode' => $value['A'],
+                            'kategori_nama' => $value['B'],
+                        ];
                     }
                 }
-
+    
                 if (count($insert) > 0) {
+                    // Insert data ke database
                     KategoriModel::insertOrIgnore($insert);
+    
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'Data berhasil diimport',
+                        'data' => $importedData, // Mengirim data yang diimport kembali ke client
+                        'failed' => $failedData // Mengirim data yang gagal diimport
+                    ]);
                 }
+    
                 return response()->json([
-                    'status' => true,
-                    'message' => 'Data berhasil diimport'
+                    'status' => false,
+                    'message' => 'Tidak ada data yang diimport',
+                    'failed' => $failedData 
                 ]);
             } else {
                 return response()->json([
@@ -310,8 +342,11 @@ class KategoriController extends Controller
                 ]);
             }
         }
+    
         return redirect('/');
     }
+    
+    
 
     public function export_excel(){
         // ambil data barang yang akan dieksport

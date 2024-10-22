@@ -69,7 +69,7 @@
 
       <li class="nav-header">Data Transaksi</li> 
       <li class="nav-item"> 
-        <a href="{{ url('/supplier') }}" class="nav-link {{ ($activeMenu == 'supplier') ? 'active' : '' }}"> 
+        <a href="{{ url('/penjualan') }}" class="nav-link {{ ($activeMenu == 'penjualan') ? 'active' : '' }}"> 
           <i class="nav-icon fas fa-receipt"></i>
           <p>Data detail Penjualan</p> 
         </a> 

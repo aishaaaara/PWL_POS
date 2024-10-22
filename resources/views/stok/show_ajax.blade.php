@@ -39,6 +39,10 @@
                         <th>Barang</th> 
                         <td>{{ $stok->barang->barang_nama }}</td> 
                     </tr>
+                    <tr> 
+                        <th>Kategori Barang</th> 
+                        <td>{{ $stok->barang->kategori->kategori_nama }}</td> <!-- Menampilkan kategori -->
+                    </tr>
                     <tr>
                         <th>Supplier</th>
                         <td>{{ $stok->supplier->supplier_nama }}</td>

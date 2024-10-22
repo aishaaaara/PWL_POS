@@ -194,7 +194,6 @@ class LevelController extends Controller
             // Cek apakah request berupa ajax
             if($request->ajax() || $request->wantsJson()) {
                 $rules = [
-                   // level_kode harus diisi, berupa string, dan bernilai unik di tabel m_level kolom level_kode
                 'level_kode' => 'required|string|unique:m_level,level_kode',
                 'level_nama' => 'required|string|max:100',
                 ];
@@ -347,10 +346,25 @@ class LevelController extends Controller
             $data = $sheet->toArray(null, false, true, true); // Ambil data excel
             $insert = [];
             $importedData = []; // Array untuk menyimpan data yang berhasil diimport
+            $failedData = []; // Array untuk menyimpan data yang gagal diimport
     
             if (count($data) > 1) { // Jika data lebih dari 1 baris
                 foreach ($data as $baris => $value) {
                     if ($baris > 1) { // Baris ke 1 adalah header, maka lewati
+    
+                        // Cek apakah level_kode sudah ada di database
+                        $levelExists = LevelModel::where('level_kode', $value['A'])->exists();
+                        
+                        if ($levelExists) {
+                            // Tambahkan ke data yang gagal diimport
+                            $failedData[] = [
+                                'level_kode' => $value['A'],
+                                'level_nama' => $value['B'],
+                                'reason' => 'Level kode sudah ada'
+                            ];
+                            continue; // Lewati proses insert jika level_kode sudah ada
+                        }
+    
                         $insert[] = [
                             'level_kode' => $value['A'],
                             'level_nama' => $value['B'],
@@ -372,13 +386,15 @@ class LevelController extends Controller
                     return response()->json([
                         'status' => true,
                         'message' => 'Data berhasil diimport',
-                        'data' => $importedData // Mengirim data yang diimport kembali ke client
+                        'data' => $importedData, // Mengirim data yang diimport kembali ke client
+                        'failed' => $failedData // Mengirim data yang gagal diimport
                     ]);
                 }
     
                 return response()->json([
                     'status' => false,
-                    'message' => 'Tidak ada data yang diimport'
+                    'message' => 'Tidak ada data yang diimport',
+                    'failed' => $failedData 
                 ]);
             } else {
                 return response()->json([
@@ -390,6 +406,7 @@ class LevelController extends Controller
     
         return redirect('/');
     }
+    
     
     public function export_excel()
     {

@@ -12,21 +12,18 @@
     </div>
     <div class="card-body">
         <!-- Filter data -->
-        <div id="filter" class="card p-3 mb-3">
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label for="filter_barang" class="col-form-label">Filter Barang</label>
-                        <select name="filter_barang" class="form-control filter_barang">
-                            <option value="">- Semua Barang -</option>
-                            @foreach($barang as $b)
-                                <option value="{{ $b->barang_id }}">{{ $b->barang_nama }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="filter_kategori" class="col-form-label">Filter Kategori</label>
+                <select name="filter_kategori" class="form-control filter_kategori">
+                    <option value="">- Semua Kategori -</option>
+                    @foreach($kategori as $k)
+                        <option value="{{ $k->kategori_id }}">{{ $k->kategori_nama }}</option>
+                    @endforeach
+                </select>
             </div>
         </div>
+    </div>
 
         @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
@@ -60,79 +57,81 @@
 
 @push('js')
 <script>
-function modalAction(url = ''){
-    $('#myModal').load(url, function(){
-        $('#myModal').modal('show');
-    });
-}
-
-var tableStok;
-$(document).ready(function(){
-    tableStok = $('#table-stok').DataTable({
-        serverSide: true,
-        ajax: {
-            "url": "{{ url('stok/list') }}",
-            "dataType": "json",
-            "type": "POST",
-            "data": function (d) {
-                d.filter_barang = $('.filter_barang').val();
-            }
-        },
-        columns: [
-            {
-                data: "DT_RowIndex", 
-                className: "text-center",
-                orderable: false,
-                searchable: false
-            },
-            {
-                data: "stok_tanggal", 
-                orderable: true,
-                searchable: true
-            },
-            {
-                data: "barang.barang_nama", 
-                orderable: true,
-                searchable: true,
-            },
-            {
-                data: "stok_jumlah", 
-                orderable: true,
-                searchable: false,
-                render: function(data, type, row){
-                    return new Intl.NumberFormat('id-ID').format(data);
+    function modalAction(url = '') {
+        $('#myModal').load(url, function() {
+            $('#myModal').modal('show');
+        });
+    }
+    
+    var tableStok;
+    $(document).ready(function(){
+        tableStok = $('#table-stok').DataTable({
+            serverSide: true,
+            ajax: {
+                "url": "{{ url('stok/list') }}",
+                "dataType": "json",
+                "type": "POST",
+                "data": function (d) {
+                    d.filter_barang = $('.filter_barang').val();
+                    d.filter_kategori = $('.filter_kategori').val(); // Tambahkan filter kategori
                 }
             },
-            {
-                data: "supplier.supplier_nama", 
-                orderable: true,
-                searchable: true
-            },
-            {
-                data: "user.nama", 
-                orderable: true,
-                searchable: true
-            },
-            {
-                data: "aksi", 
-                orderable: false,
-                searchable: false
-            }
-        ]
-    });
-
+            columns: [
+                {
+                    data: "DT_RowIndex", 
+                    className: "text-center",
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: "stok_tanggal", 
+                    orderable: true,
+                    searchable: true
+                },
+                {
+                    data: "barang.barang_nama", 
+                    orderable: true,
+                    searchable: true,
+                },
+                {
+                    data: "stok_jumlah", 
+                    orderable: true,
+                    searchable: false,
+                    render: function(data, type, row){
+                        return new Intl.NumberFormat('id-ID').format(data);
+                    }
+                },
+                {
+                    data: "supplier.supplier_nama", 
+                    orderable: true,
+                    searchable: true
+                },
+                {
+                    data: "user.nama", 
+                    orderable: true,
+                    searchable: true
+                },
+                {
+                    data: "aksi", 
+                    orderable: false,
+                    searchable: false
+                }
+            ]
+        });
     
-    $('#table-stok_filter input').on('keyup change', function() {
-        tableStok.search(this.value).draw();
+        // Listener untuk filter barang
+        $('.filter_barang').change(function() {
+            tableStok.draw(); // Refresh tabel saat filter barang berubah
+        });
+    
+        // Listener untuk filter kategori
+        $('.filter_kategori').change(function() {
+            tableStok.draw(); // Refresh tabel saat filter kategori berubah
+        });
+    
+        $('#stok_id').on('change', function () {
+            tableStok.ajax.reload(); // Reload data jika stok_id berubah
+        });
     });
-
-    $('.filter_barang').change(function() {
-        tableStok.draw();
-    });
-
-    $('#stok_id').on('change', function () {
-        tableStok.ajax.reload();
-    });
-});
-</script>
+    </script>    
 @endpush

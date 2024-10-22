@@ -338,9 +338,10 @@ class SupplierController extends Controller
     {
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
-                // validasi file harus xls atau xlsx, max 1MB
+                // Validasi file harus xls atau xlsx, max 1MB
                 'file_supplier' => ['required', 'mimes:xlsx', 'max:1024']
             ];
+            
             $validator = Validator::make($request->all(), $rules);
             if ($validator->fails()) {
                 return response()->json([
@@ -349,31 +350,64 @@ class SupplierController extends Controller
                     'msgField' => $validator->errors()
                 ]);
             }
-            $file = $request->file('file_supplier'); // ambil file dari request
-            $reader = IOFactory::createReader('Xlsx'); // load reader file excel
-            $reader->setReadDataOnly(true); // hanya membaca data
-            $spreadsheet = $reader->load($file->getRealPath()); // load file excel
-            $sheet = $spreadsheet->getActiveSheet(); // ambil sheet yang aktif
-            $data = $sheet->toArray(null, false, true, true); // ambil data excel
+    
+            $file = $request->file('file_supplier'); // Ambil file dari request
+            $reader = IOFactory::createReader('Xlsx'); // Load reader file excel
+            $reader->setReadDataOnly(true); // Hanya membaca data
+            $spreadsheet = $reader->load($file->getRealPath()); // Load file excel
+            $sheet = $spreadsheet->getActiveSheet(); // Ambil sheet yang aktif
+            $data = $sheet->toArray(null, false, true, true); // Ambil data excel
             $insert = [];
-            if (count($data) > 1) { // jika data lebih dari 1 baris
+            $importedData = []; // Data yang berhasil diimpor
+            $failedData = [];   // Data yang gagal diimpor
+    
+            if (count($data) > 1) { // Jika data lebih dari 1 baris
                 foreach ($data as $baris => $value) {
-                    if ($baris > 1) { // baris ke 1 adalah header, maka lewati
+                    if ($baris > 1) { // Baris pertama adalah header, jadi di-skip
+    
+                        // Cek apakah supplier_kode sudah ada di database
+                        $supplierExists = SupplierModel::where('supplier_kode', $value['A'])->exists();
+                        
+                        if ($supplierExists) {
+                            // Tambahkan ke data yang gagal diimpor
+                            $failedData[] = [
+                                'supplier_kode' => $value['A'],
+                                'supplier_nama' => $value['B'],
+                                'reason' => 'Supplier kode sudah ada'
+                            ];
+                            continue; // Lewati proses insert jika supplier_kode sudah ada
+                        }
+    
+                        // Siapkan data untuk dimasukkan ke database
                         $insert[] = [
                             'supplier_kode' => $value['A'],
                             'supplier_nama' => $value['B'],
                             'supplier_alamat' => $value['C'],
                             'created_at' => now(),
                         ];
+    
+                        // Menyimpan data yang berhasil diimpor untuk dikembalikan ke client
+                        $importedData[] = [
+                            'supplier_kode' => $value['A'],
+                            'supplier_nama' => $value['B'],
+                        ];
                     }
                 }
+    
                 if (count($insert) > 0) {
-                    // insert data ke database, jika data sudah ada, maka diabaikan
                     SupplierModel::insertOrIgnore($insert);
-                }
-                return response()->json([
+
+                    return response()->json([
                     'status' => true,
-                    'message' => 'Data berhasil diimport'
+                    'message' => count($failedData) > 0 ? 'Data sebagian berhasil diimport dengan beberapa kegagalan' : 'Data berhasil diimport sepenuhnya',
+                    'data' => $importedData, // Data yang berhasil diimpor
+                    'failed' => $failedData  // Data yang gagal diimpor
+                    ]);
+                    
+                }  return response()->json([
+                    'status' => false,
+                    'message' => 'Tidak ada data yang diimport',
+                    'failed' => $failedData 
                 ]);
             } else {
                 return response()->json([
@@ -382,8 +416,10 @@ class SupplierController extends Controller
                 ]);
             }
         }
+    
         return redirect('/');
     }
+    
 
     public function export_excel()
     {

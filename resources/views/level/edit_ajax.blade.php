@@ -51,8 +51,8 @@
    $(document).ready(function() { 
             $("#form-edit").validate({ 
                 rules: {  
-                    level_kode: {required: true, minlength: 3, maxlength: 100}, 
-                    level_nama: {required: true, minlength: 3, maxlength: 100}
+                    level_kode: {required: true, minlength: 1, maxlength: 100}, 
+                    level_nama: {required: true, minlength: 1, maxlength: 100}
                 }, 
                 submitHandler: function(form) { 
                     $.ajax({ 
