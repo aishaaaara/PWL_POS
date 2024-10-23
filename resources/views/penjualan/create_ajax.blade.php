@@ -78,54 +78,46 @@
                 }
             },
             submitHandler: function(form) {
-    // Periksa apakah input tanggal memiliki nilai
-    var dateTimeInput = $('#tanggal').val();
-    if (!dateTimeInput) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Kesalahan',
-            text: 'Tanggal dan waktu tidak boleh kosong.'
-        });
-        return false; // Jangan kirim form jika tidak ada input tanggal
-    }
+                var dateTimeInput = $('#tanggal').val();
+                if (!dateTimeInput) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Kesalahan',
+                        text: 'Tanggal dan waktu tidak boleh kosong.'
+                    });
+                    return false; // Jangan kirim form jika tidak ada input tanggal
+                }
 
-    // Kirim data ke server melalui AJAX
-    $.ajax({
-        url: form.action,
-        type: 'POST',
-        data: $(form).serialize(), // Data form termasuk tanggal dengan format datetime-local
-        success: function(response) {
-            console.log(response); // Tambahkan ini untuk melihat respon
-            if (response.status) {
-                $('#myModal').modal('hide');
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil',
-                    text: response.message
+                // Kirim data ke server melalui AJAX
+                $.ajax({
+                    url: form.action,
+                    type: 'POST',
+                    data: $(form).serialize(), // Data form termasuk tanggal dengan format datetime-local
+                    success: function(response) {
+                        console.log(response); // Tambahkan ini untuk melihat respon
+                        if (response.status) {
+                            $('#myModal').modal('hide');
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil',
+                                text: 'Data berhasil disimpan' // Ubah pesan ini sesuai permintaan
+                            });
+                            dataPenjualan.ajax.reload();
+                        } else {
+                            $('.error-text').text('');
+                            $.each(response.msgField, function(prefix, val) {
+                                $('#error-' + prefix).text(val[0]);
+                            });
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Terjadi Kesalahan',
+                                text: response.message
+                            });
+                        }
+                    },
                 });
-                dataPenjualan.ajax.reload();
-            } else {
-                $('.error-text').text('');
-                $.each(response.msgField, function(prefix, val) {
-                    $('#error-' + prefix).text(val[0]);
-                });
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Terjadi Kesalahan',
-                    text: response.message
-                });
-            }
-        },
-        error: function(xhr) {
-            // Handle error
-            Swal.fire({
-                icon: 'error',
-                title: 'Terjadi Kesalahan',
-                text: 'Gagal mengirim data, silakan coba lagi.'
-            });
-        }
-    });
-}
+                return false;
+            },
             errorElement: 'span',
             errorPlacement: function(error, element) {
                 error.addClass('invalid-feedback');
@@ -150,3 +142,4 @@
         });
     });
 </script>
+

@@ -147,7 +147,7 @@ Route::middleware(['auth'])->group(function(){
         });
 
     //stok
-    Route::middleware(['authorize:ADM,MNG,STF,CUS'])->group(function() {
+    Route::middleware(['authorize:ADM,MNG,STF'])->group(function() {
         Route::get('/stok', [StokController::class, 'index']); //menampilkan halaman awal Sarang
         Route::post('/stok/list', [StokController::class, 'list']); //menampilkan data stok dalam bentuk json untuk db 
         Route::post('/stok', [StokController::class, 'store']); //menampilkan data stok baru

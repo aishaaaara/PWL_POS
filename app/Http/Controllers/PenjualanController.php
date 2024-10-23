@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Models\BarangModel;
 use App\Models\DetailPenjualanModel;
 use App\Models\PenjualanModel;
@@ -178,10 +177,8 @@ class PenjualanController extends Controller
             'barang.*.jumlah' => 'nullable|integer|min:1',
         ]);
     
-        // Mendapatkan user yang sedang login
         $user = Auth::user();
     
-        // Simpan data penjualan
         $penjualan = new PenjualanModel();
         $penjualan->penjualan_kode = $validatedData['penjualan_kode'];
         $penjualan->pembeli = $validatedData['pembeli'];
@@ -189,7 +186,6 @@ class PenjualanController extends Controller
         $penjualan->user_id = $user->user_id; // Menggunakan user yang sedang login
         $penjualan->save();
     
-        // Simpan detail penjualan
         foreach ($validatedData['barang'] as $item) {
             if (!empty($item['id'])) {
                 $barang = BarangModel::find($item['id']);
@@ -201,16 +197,12 @@ class PenjualanController extends Controller
                 $detailPenjualan->save();
             }
         }
+        return response()->json([
+            'status' => true,
+            'message' => 'Data level berhasil disimpan'
+        ]);
     
-        // Cek apakah request adalah AJAX
-        if ($request->ajax()) {
-            return response()->json([
-                'message' => 'Transaksi berhasil disimpan.',
-                'penjualan_id' => $penjualan->penjualan_id
-            ], 200);
-        }
-    
-        return redirect('/penjualan')->with('success', 'Transaksi berhasil disimpan.');
+        return redirect('/penjualan');
     }
     
         public function show_ajax(string $id)
@@ -273,11 +265,11 @@ class PenjualanController extends Controller
     public function import_ajax(Request $request)
     {
         if ($request->ajax() || $request->wantsJson()) {
+            // Validasi file harus berupa xlsx dan maksimal 1MB
             $rules = [
                 'file_penjualan' => ['required', 'mimes:xlsx', 'max:1024']
             ];
             $validator = Validator::make($request->all(), $rules);
-    
             if ($validator->fails()) {
                 return response()->json([
                     'status' => false,
@@ -286,76 +278,91 @@ class PenjualanController extends Controller
                 ]);
             }
     
-            $file = $request->file('file_penjualan');
+            $file = $request->file('file_penjualan'); // Ambil file dari request
             $reader = IOFactory::createReader('Xlsx'); // Load reader file excel
             $reader->setReadDataOnly(true); // Hanya membaca data
-    
-            try {
-                $spreadsheet = $reader->load($file->getRealPath()); // Load file excel
-            } catch (\Exception $e) {
-                return response()->json(['status' => false, 'message' => 'Error loading file: ' . $e->getMessage()]);
-            }
-    
+            $spreadsheet = $reader->load($file->getRealPath()); // Load file excel
             $sheet = $spreadsheet->getActiveSheet(); // Ambil sheet yang aktif
             $data = $sheet->toArray(null, false, true, true); // Ambil data excel dalam array
-            $detailInsert = []; 
-            $userId = auth()->user()->id; // Ambil ID pengguna yang sedang login
+            $errors = [];
+            $detailInsert = []; // Array untuk insert ke tabel DetailPenjualan
     
-            if (count($data) > 1) { 
+            if (count($data) > 1) { // Jika ada lebih dari 1 baris
                 foreach ($data as $baris => $value) {
                     if ($baris > 1) { // Lewati header pada baris pertama
-                        // Buat penjualan jika belum ada
+                        // Validasi format data
+                        if (empty($value['A']) || empty($value['B']) || empty($value['C']) || empty($value['D']) || empty($value['E']) || empty($value['F'])) {
+                            $errors[] = "Baris " . ($baris + 1) . ": Pastikan semua kolom diisi dengan benar.";
+                            continue; // Lewati baris ini
+                        }
+    
+                        // Cari user berdasarkan nama
+                        $user = UserModel::where('nama', $value['B'])->first(); // Ganti 'nama' dengan kolom nama yang sesuai
+                        if (!$user) {
+                            return response()->json([
+                                'status' => false,
+                                'message' => 'User tidak ditemukan: ' . $value['B'],
+                            ]);
+                        }
+    
+                        // Cari barang berdasarkan nama
+                        $barang = BarangModel::where('barang_nama', $value['E'])->first(); // Ganti 'barang_nama' dengan kolom nama yang sesuai
+                        if (!$barang) {
+                            return response()->json([
+                                'status' => false,
+                                'message' => 'Barang tidak ditemukan: ' . $value['E'],
+                            ]);
+                        }
+    
+                        $harga_jual = $barang->harga_jual;
+    
+                        $penjualan_tanggal = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value['D']);
+    
+                        // Konversi ke format yang sesuai untuk database (Y-m-d H:i:s)
+                        $formatted_penjualan_tanggal = $penjualan_tanggal->format('Y-m-d H:i:s');
+    
+                        // Cek apakah penjualan sudah ada atau belum, jika tidak ada maka buat baru
                         $penjualan = PenjualanModel::firstOrCreate(
                             ['penjualan_kode' => $value['A']], // Kode unik
                             [
-                                'user_id' => $userId, // Ambil ID pengguna yang sedang login
+                                'user_id' => $user->user_id, // Gunakan user_id
                                 'pembeli' => $value['C'],
-                                'penjualan_tanggal' => now(), // Set tanggal saat ini
+                                'penjualan_tanggal' => $formatted_penjualan_tanggal,
                                 'created_at' => now(),
                             ]
                         );
     
-                        // Cek barang berdasarkan nama (case-insensitive)
-                        $barang = BarangModel::whereRaw('LOWER(barang_nama) = ?', [strtolower($value['D'])])->first(); // Sesuaikan index kolom
+                        // Masukkan data detail penjualan (barang)
+                        $jumlah_barang = $value['F'];
+                        $detailInsert[] = [
+                            'penjualan_id' => $penjualan->penjualan_id, // Ambil ID dari penjualan yang baru dibuat
+                            'barang_id' => $barang->barang_id, // Ambil ID barang yang ditemukan
+                            'jumlah' => $jumlah_barang, // Jumlah barang yang dibeli
+                            'harga' => $harga_jual, // Harga barang
+                            'created_at' => now(),
+                        ];
     
-                        if ($barang) {
-                            $harga = $barang->harga_jual; // Ambil harga dari barang
-                            $jumlah = $value['F']; // Jumlah barang yang dibeli
-                            $subtotal = $harga * $jumlah; // Hitung subtotal
-    
-                            $detailInsert[] = [
-                                'penjualan_id' => $penjualan->id, // Ambil ID dari penjualan yang baru dibuat
-                                'barang_id' => $barang->barang_id, // Ambil ID dari barang yang ditemukan
-                                'harga' => $harga, // Ambil harga dari barang
-                                'jumlah' => $jumlah, // Jumlah barang yang dibeli
-                                'subtotal' => $subtotal, // Hitung subtotal
-                                'created_at' => now(),
-                            ];
-                        } else {
-                            // Anda bisa menambahkan logika untuk menangani barang yang tidak ditemukan di sini, jika perlu
-                        }
                     }
                 }
     
-                // Jika ada detail yang akan dimasukkan, lakukan insert
+                // Insert detail penjualan ke tabel DetailPenjualan jika ada datanya
                 if (count($detailInsert) > 0) {
                     DetailPenjualanModel::insert($detailInsert);
                 }
     
                 return response()->json([
                     'status' => true,
-                    'message' => 'Data berhasil diimpor'
+                    'message' => 'Data berhasil diimport, stok barang diperbarui',
+                    'errors' => $errors
                 ]);
             } else {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Tidak ada data yang diimpor'
+                    'message' => 'Tidak ada data yang diimport'
                 ]);
             }
         }
-    
-        // Jika bukan permintaan AJAX, berikan respon yang sesuai
-        return response()->json(['status' => false, 'message' => 'Request tidak valid']);
+        return redirect('/');
     }
     
 

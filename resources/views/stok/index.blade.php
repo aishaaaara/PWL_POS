@@ -10,20 +10,22 @@
             <a href="{{ url('/stok/export_pdf') }}" class="btn btn-warning"><i class="fa fa-file-pdf"></i> Export Stok(PDF)</a>
         </div>
     </div>
+    
     <div class="card-body">
         <!-- Filter data -->
-        <div class="col-md-4">
-            <div class="form-group">
-                <label for="filter_kategori" class="col-form-label">Filter Kategori</label>
-                <select name="filter_kategori" class="form-control filter_kategori">
-                    <option value="">- Semua Kategori -</option>
-                    @foreach($kategori as $k)
-                        <option value="{{ $k->kategori_id }}">{{ $k->kategori_nama }}</option>
-                    @endforeach
-                </select>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="filter_kategori" class="col-form-label">Filter Kategori</label>
+                    <select name="filter_kategori" class="form-control filter_kategori">
+                        <option value="">- Semua Kategori -</option>
+                        @foreach($kategori as $k)
+                            <option value="{{ $k->kategori_id }}">{{ $k->kategori_nama }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
         </div>
-    </div>
 
         @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
@@ -32,20 +34,22 @@
             <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
 
-        <table class="table table-bordered table-sm table-striped table-hover" id="table-stok">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Tanggal</th>
-                    <th>Nama Barang</th>
-                    <th>Jumlah Stok</th>
-                    <th>Supplier</th>
-                    <th>User</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm table-striped table-hover" id="table-stok">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Tanggal</th>
+                        <th>Nama Barang</th>
+                        <th>Jumlah Stok</th>
+                        <th>Supplier</th>
+                        <th>User</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
