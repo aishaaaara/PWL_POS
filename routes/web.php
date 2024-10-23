@@ -173,7 +173,7 @@ Route::middleware(['auth'])->group(function(){
         Route::get('/penjualan/create', [PenjualanController::class, 'create']);   // menampilkan halaman form tambah penjualan
         Route::post('/penjualan', [PenjualanController::class,'store']);          // menyimpan data penjualan baru
         Route::get('/penjualan/create_ajax', [PenjualanController::class, 'create_ajax']); // Menampilkan halaman form tambah penjualan Ajax
-        Route::post('/penjualan/ajax', [PenjualanController::class, 'store_ajax']); // Menampilkan data penjualan baru Ajax
+        Route::post('/penjualan/ajax', [PenjualanController::class, 'store_ajax']);
         Route::get('/penjualan/{id}', [PenjualanController::class, 'show']);       // menampilkan detail penjualan
         Route::get('/penjualan/{id}/show_ajax', [PenjualanController::class, 'show_ajax']);
         Route::get('/penjualan/{id}/delete_ajax', [PenjualanController::class, 'confirm_ajax']); // Untuk tampilkan form confirm delete penjualan Ajax

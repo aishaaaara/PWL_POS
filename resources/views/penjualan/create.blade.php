@@ -99,25 +99,6 @@
             });
             $('#total_harga').val(total.toFixed(2)); 
         }
-
-        // $('.btn-tambah').click(function() {
-        //     var id = $(this).data('id');
-        //     var jumlahInput = $('#barang_' + id + '_jumlah');
-        //     var currentValue = parseInt(jumlahInput.val()) || 0;
-        //     jumlahInput.val(currentValue + 1);
-        //     calculateSubtotal(id); 
-        // });
-
-        // $('.btn-kurang').click(function() {
-        //     var id = $(this).data('id');
-        //     var jumlahInput = $('#barang_' + id + '_jumlah');
-        //     var currentValue = parseInt(jumlahInput.val()) || 0;
-        //     if (currentValue > 1) {
-        //         jumlahInput.val(currentValue - 1);
-        //         calculateSubtotal(id); 
-        //     }
-        // });
-
         $('.barang-checkbox').change(function() {
             var id = $(this).val();
             calculateSubtotal(id); 

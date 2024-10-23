@@ -380,7 +380,6 @@ class LevelController extends Controller
                 }
     
                 if (count($insert) > 0) {
-                    // Insert data ke database, jika data sudah ada, maka diabaikan
                     LevelModel::insertOrIgnore($insert);
     
                     return response()->json([
