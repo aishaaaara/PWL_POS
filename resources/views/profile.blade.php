@@ -8,13 +8,7 @@
                     <h4 class="mb-0">Profile Update</h4>
                 </div>
                 <div class="card-body">
-                    @if(session('status'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('status') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    @endif
-
+                
                     <div class="row">
                         <div class="col-md-4 text-center">
                             @if($user->avatar)
@@ -31,7 +25,7 @@
                                 @csrf
 
                                 <div class="row mb-3">
-                                    <label for="username" class="col-md-4 col-form-label text-md-end">{{ __('Username') }}</label>
+                                    <label for="username" class="col-md-4 col-form-label text-md-end">{{('Username') }}</label>
                                     <div class="col-md-8">
                                         <input id="username" type="text" class="form-control shadow-sm @error('username') is-invalid @enderror" name="username" value="{{ $user->username }}" required autocomplete="username" placeholder="Enter your username">
                                         @error('username')
@@ -43,7 +37,7 @@
                                 </div>
 
                                 <div class="row mb-3">
-                                    <label for="nama" class="col-md-4 col-form-label text-md-end">{{ __('Nama') }}</label>
+                                    <label for="nama" class="col-md-4 col-form-label text-md-end">{{('Nama') }}</label>
                                     <div class="col-md-8">
                                         <input id="nama" type="text" class="form-control shadow-sm @error('nama') is-invalid @enderror" name="nama" value="{{ old('nama', $user->nama) }}" required autocomplete="nama" placeholder="Enter your full name">
                                         @error('nama')
@@ -55,7 +49,7 @@
                                 </div>
 
                                 <div class="row mb-3">
-                                    <label for="old_password" class="col-md-4 col-form-label text-md-end">{{ __('Password Lama') }}</label>
+                                    <label for="old_password" class="col-md-4 col-form-label text-md-end">{{('Password Lama') }}</label>
                                     <div class="col-md-8">
                                         <input id="old_password" type="password" class="form-control shadow-sm @error('old_password') is-invalid @enderror" name="old_password" autocomplete="old-password" placeholder="Enter your old password">
                                         @error('old_password')
@@ -67,7 +61,7 @@
                                 </div>
 
                                 <div class="row mb-3">
-                                    <label for="password" class="col-md-4 col-form-label text-md-end">{{ __('Password Baru') }}</label>
+                                    <label for="password" class="col-md-4 col-form-label text-md-end">{{('Password Baru') }}</label>
                                     <div class="col-md-8">
                                         <input id="password" type="password" class="form-control shadow-sm @error('password') is-invalid @enderror" name="password" autocomplete="new-password" placeholder="Enter new password">
                                         @error('password')
@@ -79,14 +73,14 @@
                                 </div>
 
                                 <div class="row mb-3">
-                                    <label for="password-confirm" class="col-md-4 col-form-label text-md-end">{{ __('Confirm Password') }}</label>
+                                    <label for="password-confirm" class="col-md-4 col-form-label text-md-end">{{('Confirm Password') }}</label>
                                     <div class="col-md-8">
                                         <input id="password-confirm" type="password" class="form-control shadow-sm" name="password_confirmation" autocomplete="new-password" placeholder="Confirm new password">
                                     </div>
                                 </div>
 
                                 <div class="row mb-3">
-                                    <label for="avatar" class="col-md-4 col-form-label text-md-end">{{ __('Ganti Foto Profil') }}</label>
+                                    <label for="avatar" class="col-md-4 col-form-label text-md-end">{{('Ganti Foto Profil') }}</label>
                                     <div class="col-md-8">
                                         <input id="avatar" type="file" class="form-control shadow-sm" name="avatar">
                                     </div>
@@ -95,7 +89,7 @@
                                 <div class="row mb-0">
                                     <div class="col-md-8 offset-md-4">
                                         <button type="submit" class="btn btn-primary shadow-sm px-4">
-                                            {{ __('Update Profile') }}
+                                            {{('Update Profile') }}
                                         </button>
                                     </div>
                                 </div>
@@ -108,4 +102,15 @@
         </div>
     </div>
 </div>
+
+<script>
+   @if(session('status'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: '{{ session('status') }}',
+            confirmButtonText: 'OK'
+        });
+    @endif
+</script>
 @endsection

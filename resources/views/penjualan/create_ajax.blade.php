@@ -100,7 +100,7 @@
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Berhasil',
-                                text: 'Data berhasil disimpan' // Ubah pesan ini sesuai permintaan
+                                text: 'Data berhasil disimpan' 
                             });
                             dataPenjualan.ajax.reload();
                         } else {

@@ -69,6 +69,6 @@ class ProfileController extends Controller
 
         $user->save();
 
-        return back()->with('status', 'Profile Diperbarui');
+    return back()->with('status', 'Berhasil di update');
     }
 }
