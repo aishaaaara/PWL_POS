@@ -6,13 +6,20 @@
     <div class="card-header">
         <h3 class="card-title">{{ $page->title }}</h3>
         <div class="card-tools">
-            <button onclick="modalAction('{{ url('penjualan/create_ajax') }}')" class="btn btn-success">Tambah Data</button>
-            <button onclick="modalAction('{{url('/penjualan/import')}}')" class="btn btn-info">Import Transaksi</button>
-            <a href="{{ url('/penjualan/export_excel') }}" class="btn btn-primary"><i class="fa fa-file-excel"></i> Export Transaksi (Excel)</a>
-            <a href="{{ url('/penjualan/export_pdf') }}" class="btn btn-warning"><i class="fa fa-file-pdf"></i> Export Transaksi (PDF)</a>
+            <button onclick="modalAction('{{ url('penjualan/create_ajax') }}')" class="btn btn-success">
+                <i class="fa fa-plus"></i> Tambah Data
+            </button>
+            <button onclick="modalAction('{{url('/penjualan/import')}}')" class="btn btn-info">
+                <i class="fa fa-upload"></i> Import Transaksi
+            </button>
+            <a href="{{ url('/penjualan/export_excel') }}" class="btn btn-primary">
+                <i class="fa fa-file-excel"></i> Export Transaksi (Excel)
+            </a>
+            <a href="{{ url('/penjualan/export_pdf') }}" class="btn btn-warning">
+                <i class="fa fa-file-pdf"></i> Export Transaksi (PDF)
+            </a>
         </div>
     </div>
-   
     <div class="card-body">
         @if (session('success'))
             <div class="alert alert-success">{{ session('success')}}</div>

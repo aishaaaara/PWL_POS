@@ -4,8 +4,12 @@
       <div class="card-header"> 
         <h3 class="card-title"> Daftar Supplier </h3> 
         <div class="card-tools">
-          <button onclick="modalAction('{{ url('/supplier/create_ajax') }}')" class="btn btn-success">Tambah supplier</button>
-            <button onclick="modalAction('{{ url('/supplier/import') }}')" class="btn btn-info">Import supplier</button>
+          <button onclick="modalAction('{{ url('/supplier/create_ajax') }}')" class="btn btn-success">
+            <i class="fa fa-plus"></i>Tambah supplier
+          </button>
+            <button onclick="modalAction('{{ url('/supplier/import') }}')" class="btn btn-info">
+            <i class="fa fa-upload"></i>Import supplier
+          </button>
             <a href="{{ url('/supplier/export_excel') }}" class="btn btn-primary"><i class="fa fa-file-excel"></i> Export supplier (Excel)</a>        
             <a href="{{ url('/supplier/export_pdf') }}" class="btn btn-warning"><i class="fa fa-file-pdf"></i> Export Barang(PDF)</a>
           </div>
