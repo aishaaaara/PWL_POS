@@ -352,7 +352,7 @@ class PenjualanController extends Controller
     
                 return response()->json([
                     'status' => true,
-                    'message' => 'Data berhasil diimport, stok barang diperbarui',
+                    'message' => 'Data berhasil diimport',
                     'errors' => $errors
                 ]);
             } else {

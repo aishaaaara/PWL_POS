@@ -34,21 +34,35 @@
                     <div class="row">
                         @foreach($barang as $barangItem)
                             <div class="col-md-4 mb-3"> <!-- Menggunakan col-md-4 untuk 3 kolom per baris -->
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input barang-checkbox" type="checkbox" id="barang_{{ $barangItem->barang_id }}" name="barang[{{ $barangItem->barang_id }}][id]" value="{{ $barangItem->barang_id }}">
-                                    <label class="form-check-label" for="barang_{{ $barangItem->barang_id }}">
-                                        {{ $barangItem->barang_nama }}
-                                    </label>
-                                </div>
-                                <div class="input-group input-group-sm mb-3">
-                                    <input type="number" class="form-control barang-jumlah" id="barang_{{ $barangItem->barang_id }}_jumlah" name="barang[{{ $barangItem->barang_id }}][jumlah]" min="1" step="1" value="1" data-id="{{ $barangItem->barang_id }}">
-                                    <input type="hidden" class="form-control barang-harga" id="barang_{{ $barangItem->barang_id }}_harga" name="barang[{{ $barangItem->barang_id }}][harga]" value="{{ $barangItem->harga_jual }}">
-                                    <input type="text" class="form-control barang-subtotal" id="barang_{{ $barangItem->barang_id }}_subtotal" name="barang[{{ $barangItem->barang_id }}][subtotal]" readonly>
+                                <!-- Tambahkan card untuk styling modern -->
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-body">
+                                        <!-- Checkbox tetap digunakan, tapi lebih rapi -->
+                                        <div class="form-check">
+                                            <input class="form-check-input barang-checkbox" type="checkbox" id="barang_{{ $barangItem->barang_id }}" name="barang[{{ $barangItem->barang_id }}][id]" value="{{ $barangItem->barang_id }}">
+                                            <label class="form-check-label" for="barang_{{ $barangItem->barang_id }}">
+                                                {{ $barangItem->barang_nama }}
+                                            </label>
+                                        </div>
+                
+                                        <!-- Penambahan informasi harga dengan desain yang lebih menonjol -->
+                                        <div class="mt-2">
+                                            <p class="text-muted mb-1">Harga: Rp {{ number_format($barangItem->harga_jual, 0, ',', '.') }}</p>
+                                        </div>
+                
+                                        <!-- Jumlah barang dengan input number dan perhitungan subtotal -->
+                                        <div class="input-group input-group-sm mt-2">
+                                            <input type="number" class="form-control barang-jumlah" id="barang_{{ $barangItem->barang_id }}_jumlah" name="barang[{{ $barangItem->barang_id }}][jumlah]" min="1" step="1" value="1" data-id="{{ $barangItem->barang_id }}">
+                                            <input type="hidden" class="form-control barang-harga" id="barang_{{ $barangItem->barang_id }}_harga" name="barang[{{ $barangItem->barang_id }}][harga]" value="{{ $barangItem->harga_jual }}">
+                                            <input type="text" class="form-control barang-subtotal" id="barang_{{ $barangItem->barang_id }}_subtotal" name="barang[{{ $barangItem->barang_id }}][subtotal]" readonly>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         @endforeach
                     </div>
                 </div>
+                
             </div>
             <div class="modal-footer">
                 <button type="button" data-dismiss="modal" class="btn btn-warning">Batal</button>
