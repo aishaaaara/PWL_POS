@@ -412,7 +412,6 @@ class PenjualanController extends Controller
             $no++;
         }
     
-        // set auto size untuk setiap kolom
         foreach(range('A','I') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
@@ -428,20 +427,17 @@ class PenjualanController extends Controller
         header('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT');
         header('Cache-Control: cache, must-revalidate');
         header('Pragma: public');
-        $writer->save('php://output'); // download file excel ke browser
+        $writer->save('php://output'); 
         exit; // keluar proses
     }
 
     public function export_pdf() {
-        // Ambil data penjualan dengan relasi user dan detail penjualan
         $penjualan = PenjualanModel::select('penjualan_id', 'penjualan_kode', 'penjualan_tanggal', 'user_id', 'pembeli')
             ->with(['user', 'detailPenjualan.barang']) // Include relasi user dan detail barang
             ->get();
     
-        // Load view 'penjualan.export_pdf' dengan data penjualan dan detail
         $pdf = Pdf::loadView('penjualan.export_pdf', ['penjualan' => $penjualan]);
-        // Set ukuran kertas dan orientasi
-        $pdf->setPaper('A4', 'portrait'); 
+        $pdf->setPaper('A4', 'landscape'); 
         $pdf->setOption('isRemoteEnabled', true);
         return $pdf->stream('Data Penjualan '.date('Y-m-d H:i:s').'.pdf');
     }

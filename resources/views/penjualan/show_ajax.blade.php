@@ -61,14 +61,21 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        @php $total = 0; @endphp
                                         @foreach ($penjualan->detail as $detail)
+                                            @php $subtotal = $detail->harga * $detail->jumlah; @endphp
                                             <tr>
                                                 <td>{{ $detail->barang->barang_nama }}</td>
                                                 <td>{{ number_format($detail->harga, 0, ',', '.') }}</td>
                                                 <td>{{ $detail->jumlah }}</td>
-                                                <td>{{ number_format($detail->harga * $detail->jumlah, 0, ',', '.') }}</td>
+                                                <td>{{ number_format($subtotal, 0, ',', '.') }}</td>
                                             </tr>
+                                            @php $total += $subtotal; @endphp
                                         @endforeach
+                                        <tr>
+                                            <th colspan="3" class="text-right">Total Keseluruhan:</th>
+                                            <th>{{ number_format($total, 0, ',', '.') }}</th>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>

@@ -11,7 +11,7 @@
             <i class="fa fa-upload"></i>Import supplier
           </button>
             <a href="{{ url('/supplier/export_excel') }}" class="btn btn-primary"><i class="fa fa-file-excel"></i> Export supplier (Excel)</a>        
-            <a href="{{ url('/supplier/export_pdf') }}" class="btn btn-warning"><i class="fa fa-file-pdf"></i> Export Barang(PDF)</a>
+            <a href="{{ url('/supplier/export_pdf') }}" class="btn btn-warning"><i class="fa fa-file-pdf"></i> Export supplier(PDF)</a>
           </div>
       </div> 
       <div class="card-body">
