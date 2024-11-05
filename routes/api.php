@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\BarangController;
 use App\Http\Controllers\Api\KategoriController;
 use App\Http\Controllers\Api\LevelController;
+use App\Http\Controllers\Api\PenjualanController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\Route;
 */
 Route::post('/register', App\Http\Controllers\Api\RegisterController::class)->name('register');
 Route::post('/register1', App\Http\Controllers\Api\RegisterController::class)->name('register1');
+
 Route::post('/login', App\Http\Controllers\Api\LoginController::class)->name('login');
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
@@ -46,10 +48,14 @@ Route::get('kategori/{kategori}', [KategoriController::class, 'show']);
 Route::put('kategori/{kategori}', [KategoriController::class, 'update']);
 Route::delete('kategori/{kategori}', [KategoriController::class, 'destroy']);
 
-//kategori
-Route::get('barang', [BarangController::class, 'index']);
-Route::post('barang', [BarangController::class, 'store']);
-Route::get('barang/{barang}', [BarangController::class, 'show']);
-Route::put('barang/{barang}', [BarangController::class, 'update']);
-Route::delete('barang/{barang}', [BarangController::class, 'destroy']);
+//Barang
+Route::get('/barang', [BarangController::class, 'index'])->name('barang.index');
+Route::post('/barang', [BarangController::class, 'store'])->name('barang.store');
+Route::get('/barang/{barang}', [BarangController::class, 'show'])->name('barang.show');
+Route::post('/barang/{barang}', [BarangController::class, 'update'])->name('barang.update');
+Route::delete('/barang/{barang}', [BarangController::class, 'destroy'])->name('barang.destroy');
 
+//penjualan
+Route::get('/penjualan', [PenjualanController::class, 'index'])->name('penjualan.index');
+Route::post('/penjualan', [PenjualanController::class, 'store'])->name('penjualan.store');
+Route::get('/penjualan/{penjualan}', [PenjualanController::class, 'show'])->name('penjualan.show');
